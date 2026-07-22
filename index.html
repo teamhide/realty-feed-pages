@@ -48,6 +48,7 @@
       .card.expanded .comments { display: grid; gap: 13px; }
       .comments h4 { margin: 0; font-size: 14px; }
       .comment { padding: 14px; border-radius: 10px; background: #f5f7fb; }
+      .comment.reply { margin-left: 20px; border-left: 3px solid #b8c8fb; background: #fafbff; }
       .comment p { margin: 0; color: #3d485d; font-size: 14px; line-height: 1.55; white-space: pre-line; }
       .comment .comment-meta { margin-top: 8px; color: var(--muted); font-size: 12px; }
       .no-comments { color: var(--muted); font-size: 14px; }
@@ -132,9 +133,10 @@
         commentsTitle.textContent = `댓글 ${commentList.length}개`;
         comments.append(commentsTitle);
         if (commentList.length) {
-          commentList.forEach(comment => {
+          const appendComment = (comment, depth = 0) => {
             const commentItem = document.createElement("div");
             commentItem.className = "comment";
+            if (depth) commentItem.classList.add("reply");
             const commentBody = document.createElement("p");
             commentBody.textContent = comment.content || "내용이 없는 댓글입니다.";
             const commentMeta = document.createElement("p");
@@ -142,7 +144,11 @@
             commentMeta.textContent = `${comment.name || "작성자 미상"} · ${koreanDate(comment.date)}`;
             commentItem.append(commentBody, commentMeta);
             comments.append(commentItem);
-          });
+            if (Array.isArray(comment.comments)) {
+              comment.comments.forEach(reply => appendComment(reply, depth + 1));
+            }
+          };
+          commentList.forEach(comment => appendComment(comment));
         } else {
           const noComments = document.createElement("p");
           noComments.className = "no-comments";
