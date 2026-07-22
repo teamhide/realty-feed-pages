@@ -78,7 +78,7 @@
     </div>
 
     <script>
-      const STATE_ISSUE_URL = "https://api.github.com/repos/teamhide/realty-feed/issues/1";
+      const FEED_URL = "./feed.json";
       const filterRoot = document.querySelector("#filters");
       const feed = document.querySelector("#feed");
       const empty = document.querySelector("#empty");
@@ -140,10 +140,9 @@
 
       async function loadReviews() {
         try {
-          const response = await fetch(STATE_ISSUE_URL, { headers: { Accept: "application/vnd.github+json" } });
-          if (!response.ok) throw new Error(`GitHub API 응답: ${response.status}`);
-          const issue = await response.json();
-          const state = JSON.parse(issue.body || "{}");
+          const response = await fetch(FEED_URL);
+          if (!response.ok) throw new Error(`피드 응답: ${response.status}`);
+          const state = await response.json();
           reviews = Object.values(state.apartments || {}).flatMap(apartment =>
             (apartment.reviews || []).map(review => ({
               ...review,
@@ -151,7 +150,7 @@
               author: review.name
             }))
           ).sort((first, second) => new Date(second.date) - new Date(first.date));
-          updated.textContent = `마지막 수집: ${koreanDate(state.updated_at || issue.updated_at)}`;
+          updated.textContent = state.updated_at ? `마지막 수집: ${koreanDate(state.updated_at)}` : "아직 수집된 리뷰가 없습니다.";
           status.innerHTML = "<i></i> 최신 데이터";
           notice.style.display = "none";
           renderFilters();
