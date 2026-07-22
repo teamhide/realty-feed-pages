@@ -35,12 +35,22 @@
       .filter { flex: 0 0 auto; padding: 9px 13px; cursor: pointer; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: #fff; font-size: 13px; }
       .filter.active { border-color: var(--blue); color: white; background: var(--blue); }
       .feed { display: grid; gap: 12px; }
-      .card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 20px; padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: var(--paper); box-shadow: 0 8px 20px rgba(30, 45, 80, .04); }
+      .card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 20px; padding: 24px; cursor: pointer; border: 1px solid var(--line); border-radius: 18px; background: var(--paper); box-shadow: 0 8px 20px rgba(30, 45, 80, .04); transition: border-color .15s ease, box-shadow .15s ease; }
+      .card:hover, .card.expanded { border-color: #becbfb; box-shadow: 0 10px 24px rgba(40, 87, 215, .1); }
+      .card:focus-visible { outline: 3px solid #9db6ff; outline-offset: 3px; }
       .tag { display: inline-block; margin-bottom: 10px; padding: 5px 9px; border-radius: 6px; color: var(--blue); background: var(--blue-soft); font-size: 12px; font-weight: 700; }
       h3 { margin: 0; font-size: 17px; letter-spacing: -0.65px; }
       .review { margin: 11px 0 0; color: #3d485d; font-size: 15px; line-height: 1.65; white-space: pre-line; }
       .meta { margin: 13px 0 0; color: var(--muted); font-size: 12px; }
       .time { color: var(--muted); font-size: 12px; white-space: nowrap; }
+      .comment-toggle { margin: 15px 0 0; color: var(--blue); font-size: 13px; font-weight: 700; }
+      .comments { display: none; grid-column: 1 / -1; padding-top: 19px; border-top: 1px solid var(--line); }
+      .card.expanded .comments { display: grid; gap: 13px; }
+      .comments h4 { margin: 0; font-size: 14px; }
+      .comment { padding: 14px; border-radius: 10px; background: #f5f7fb; }
+      .comment p { margin: 0; color: #3d485d; font-size: 14px; line-height: 1.55; white-space: pre-line; }
+      .comment .comment-meta { margin-top: 8px; color: var(--muted); font-size: 12px; }
+      .no-comments { color: var(--muted); font-size: 14px; }
       .empty { display: none; padding: 42px 20px; border: 1px dashed #cfd6e3; border-radius: 18px; color: var(--muted); text-align: center; background: rgba(255,255,255,.45); }
       .notice { padding: 42px 20px; border: 1px dashed #cfd6e3; border-radius: 18px; color: var(--muted); text-align: center; background: rgba(255,255,255,.45); }
       footer { margin-top: 34px; color: var(--muted); font-size: 12px; text-align: center; }
@@ -95,6 +105,9 @@
       function reviewCard(review) {
         const article = document.createElement("article");
         article.className = "card";
+        article.tabIndex = 0;
+        article.setAttribute("role", "button");
+        article.setAttribute("aria-expanded", "false");
         const content = document.createElement("div");
         const tag = document.createElement("span");
         tag.className = "tag";
@@ -111,8 +124,48 @@
         time.className = "time";
         time.dateTime = review.date;
         time.textContent = koreanDate(review.date);
-        content.append(tag, title, body, author);
-        article.append(content, time);
+        const comments = document.createElement("section");
+        comments.className = "comments";
+        comments.setAttribute("aria-label", "댓글");
+        const commentsTitle = document.createElement("h4");
+        const commentList = Array.isArray(review.comments) ? review.comments : [];
+        commentsTitle.textContent = `댓글 ${commentList.length}개`;
+        comments.append(commentsTitle);
+        if (commentList.length) {
+          commentList.forEach(comment => {
+            const commentItem = document.createElement("div");
+            commentItem.className = "comment";
+            const commentBody = document.createElement("p");
+            commentBody.textContent = comment.content || "내용이 없는 댓글입니다.";
+            const commentMeta = document.createElement("p");
+            commentMeta.className = "comment-meta";
+            commentMeta.textContent = `${comment.name || "작성자 미상"} · ${koreanDate(comment.date)}`;
+            commentItem.append(commentBody, commentMeta);
+            comments.append(commentItem);
+          });
+        } else {
+          const noComments = document.createElement("p");
+          noComments.className = "no-comments";
+          noComments.textContent = "아직 댓글이 없습니다.";
+          comments.append(noComments);
+        }
+        const toggleHint = document.createElement("p");
+        toggleHint.className = "comment-toggle";
+        toggleHint.textContent = commentList.length ? `댓글 ${commentList.length}개 보기` : "댓글 확인";
+        const toggleComments = () => {
+          const expanded = article.classList.toggle("expanded");
+          article.setAttribute("aria-expanded", String(expanded));
+          toggleHint.textContent = expanded ? "댓글 접기" : (commentList.length ? `댓글 ${commentList.length}개 보기` : "댓글 확인");
+        };
+        article.addEventListener("click", toggleComments);
+        article.addEventListener("keydown", event => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            toggleComments();
+          }
+        });
+        content.append(tag, title, body, author, toggleHint);
+        article.append(content, time, comments);
         return article;
       }
 
