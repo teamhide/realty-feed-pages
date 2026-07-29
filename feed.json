@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updated_at": "2026-07-29T22:41:19.845190Z",
+  "updated_at": "2026-07-29T23:45:00.462227Z",
   "apartments": {
     "3ja7": {
       "aptName": "약수하이츠",
@@ -449,7 +449,14 @@
               "date": "2026-07-29T11:24:00.000Z",
               "name": "KWKLK",
               "content": "https://www.hankyung.com/article/2026072937061",
-              "comments": []
+              "comments": [
+                {
+                  "date": "2026-07-29T23:26:36.000Z",
+                  "name": "클리프",
+                  "content": "이 정부는 그냥 모두가 평등하게 못살기를 바라고 있네요. 선진국 수도 한복판에 저런 하이엔드급 건축물이 못들어올 이유가 없는데 ㅋㅋㅋ",
+                  "comments": []
+                }
+              ]
             }
           ]
         },
